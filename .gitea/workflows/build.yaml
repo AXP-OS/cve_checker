@@ -1,0 +1,47 @@
+#####################################################################################
+# documentation:
+# - https://docs.gitea.com/usage/actions/overview
+# - https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+#####################################################################################
+
+name: Gradle build
+run-name: Initiated by ${{ gitea.actor }}
+on:
+  push:
+  workflow_dispatch:  # button shown only when in default branch
+
+jobs:
+  build:
+    runs-on: docker-node-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - id: commit
+      uses: prompt/actions-commit-hash@v3
+
+    - name: set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: "current"
+        gradle-home-cache-cleanup: true
+
+    - name: Build
+      run: |
+        gradle --no-daemon assemble 
+
+        find . -name '*.jar'
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: cve_checker-0.7.0-${{ steps.commit.outputs.short }}.jar
+        path: ./build/libs/cve_checker-0.7.0.jar
+        if-no-files-found: error
