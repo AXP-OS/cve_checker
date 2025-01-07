@@ -41,6 +41,8 @@ public class Scraper {
       scrapeTable(link);
     } else if (link.contains("cip-kernel-sec")) {
       scrapeCIP(link);
+    } else if (link.contains("cip_kernel")) {
+      scrapeCIP(link);
     } else {
       System.out.println("Link unsupported");
     }
