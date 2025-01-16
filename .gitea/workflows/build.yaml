@@ -9,7 +9,7 @@ run-name: Initiated by ${{ gitea.actor }}
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
   workflow_dispatch:  # button shown only when in default branch
 
 jobs:
