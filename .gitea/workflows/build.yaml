@@ -38,12 +38,36 @@ jobs:
     - name: Build
       run: |
         gradle --no-daemon assemble 
+        #find . -name '*.jar' # ./build/libs/cve_checker-0.7.0.jar
 
-        find . -name '*.jar'
+    - name: Prep release
+      run: |
+        cd ./build/libs/
+        mv cve_checker-*.jar cve_checker.jar
+        sha512sum cve_checker.jar > cve_checker.jar.sha512
+        echo "SHA=$(cat cve_checker.jar.sha512 | cut -d ' ' -f1)" >> $GITHUB_ENV
+        
+        REF_NAME=$(echo "${{ github.ref }}" | sed -e 's/refs\/heads\///' -e 's/refs\/tags\/v//' -e 's/release\/v//')
+        echo "Cleaned name is ${REF_NAME}"
+        echo "branch=${REF_NAME}" >> "$GITHUB_OUTPUT"
+        echo "APP_VERSION=v${REF_NAME}" >> $GITHUB_ENV
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
+    - name: Generate release on MIRROR
+      uses: https://gitea.com/actions/gitea-release-action@v1
       with:
-        name: cve_checker-0.7.0-${{ steps.commit.outputs.short }}.jar
-        path: ./build/libs/cve_checker-0.7.0.jar
-        if-no-files-found: error
+        token: "${{ secrets.MIRROR_TOKEN_RW }}"
+        tag_name: ${{ env.APP_VERSION }}
+        prerelease: false
+        server_url: https://${{ vars.MIRROR_ORG_DOMAIN }}
+        repository: ${{ vars.MIRROR_RELEASE_ORG_NAME }}/${{ github.event.repository.name }}
+        name: "${{ env.APP_VERSION }}"
+        body: |
+          # CVE Kernel patcher
+
+          |JAR|sha512|
+          |-|-|
+          |cve_checker.jar|${{ env.SHA }}|
+
+        files: |
+            - build/libs/cve_checker.jar
+            - build/libs/cve_checker.jar.sha512
