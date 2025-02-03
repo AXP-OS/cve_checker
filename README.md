@@ -5,6 +5,8 @@ A tool for downloading, checking, and applying (CVE) patches to a (kernel) repos
 
 This is a fork of the original patched made by: [Divested Computing Group](https://github.com/Divested-Mobile/CVE_Checker)!
 
+A prebuilt release can be downloaded [here](https://codeberg.org/AXP-OS_releases/cve_checker/releases) / or [always-latest](https://codeberg.org/AXP-OS_releases/cve_checker/releases/download/latest/cve_checker.jar)
+
 Notes on CVE Patching
 ----------------------
 - Patches applied may not be relevant to a device's architecture or hardware
