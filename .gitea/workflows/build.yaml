@@ -69,5 +69,5 @@ jobs:
           |cve_checker.jar|${{ env.SHA }}|
 
         files: |
-            - build/libs/cve_checker.jar
-            - build/libs/cve_checker.jar.sha512
+            build/libs/cve_checker.jar
+            build/libs/cve_checker.jar.sha512
