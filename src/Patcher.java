@@ -285,7 +285,7 @@ public class Patcher {
         out.println(command);
       }
       if (MODE_CURRENT == MODE_WORKSPACE) {
-        out.println("editKernelLocalversion \"-dos.p" + scriptCommands.size() + "\"");
+        out.println("editKernelLocalversion \"-p" + scriptCommands.size() + "\"");
         out.println("else echo \"" + repoName + " is unavailable, not patching.\";");
         out.println("fi;");
         out.println("cd \"$DOS_BUILD_BASE\"");
