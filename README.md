@@ -1,7 +1,9 @@
-DivestOS CVE Patcher
+Kernel CVE Patcher
 ====================
 
 A tool for downloading, checking, and applying (CVE) patches to a (kernel) repository.
+
+This is a fork of the original patched made by: [Divested Computing Group](https://github.com/Divested-Mobile/CVE_Checker)!
 
 Notes on CVE Patching
 ----------------------
