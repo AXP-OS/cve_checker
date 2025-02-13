@@ -1,8 +1,13 @@
-#####################################################################################
+############################################################################################
+# documentation:
+# - https://docs.gitea.com/usage/actions/overview
+# - https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+# - https://docs.gitea.com/usage/actions/faq#what-workflow-trigger-events-does-gitea-support
+############################################################################################
 # Mirror this repo to e.g. Codeberg
 # - create repo if needed
 # - sync otherwise
-#####################################################################################
+############################################################################################
 
 name: "Mirror RELEASE repo to ${{ vars.MIRROR_RELEASE_ORG_NAME }}"
 run-name: Initiated by ${{ gitea.actor }}
