@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2017-2023 Divested Computing Group
+Copyright (c) 2017-2024 Divested Computing Group
+Copyright (c) 2025 steadfasterX <steadfasterX #AT# binbash |dot| rocks >
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -14,17 +15,25 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Downloader {
 
+  private static final String FIXED_DATE_STRING = System.getenv("CVE_PATCHER_NOT_OLDER_THAN_DATE");
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+  private static final SimpleDateFormat GIT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
   private static ArrayList<CVE> cves = new ArrayList<CVE>();
   private static final String userAgent =
       "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0";
@@ -114,7 +123,7 @@ public class Downloader {
               }
               String patchOutput =
                   outDir.getAbsolutePath() + "/" + String.format("%04d", linkC) + ".patch" + base64;
-              boolean needDownload = true;
+              boolean needDownload = false;
               if(Common.INCLUSIVE_KERNEL_PATH != null && (link.getURL().startsWith(Common.URL_LINUX_MAINLINE) || link.getURL().startsWith(Common.URL_LINUX_STABLE) || link.getURL().startsWith(Common.URL_LINUX_CIP) || link.getURL().startsWith(Common.URL_AOSP_STABLE) || link.getURL().startsWith(Common.URL_OPENELA))) {
                 String commitID = null;
                 if(link.getURL().contains("=")) {
@@ -127,14 +136,16 @@ public class Downloader {
                   commitID = link.getURL().split("https://github.com/openela/kernel-lts/commit/")[1];
                 }
                 if(commitID == null) {
-                  System.out.println("Unable to extract commit ID");
+                  System.out.println("Unable to extract commit ID for: " + patch);
                   System.exit(1);
                 }
-                if (Common.runCommand("git -C " + Common.INCLUSIVE_KERNEL_PATH + " format-patch -1 " + commitID + " --no-signature --keep-subject --output " + patchOutput.replaceAll(".base64", "")) == 0) {
-                  needDownload = false;
-                  System.out.println("\t\tPulled patch directly from local repo");
-                } else {
-                  System.out.println("\t\tFailed to pull patch from local repo");
+                if (isCommitDateValid(commitID, patch)) {
+                    if (Common.runCommand("git -C " + Common.INCLUSIVE_KERNEL_PATH + " format-patch -1 " + commitID + " --no-signature --keep-subject --output " + patchOutput.replaceAll(".base64", "")) == 0) {
+                      System.out.println("\t\t\tPulled patch directly from local repo (" + commitID + ")");
+                    } else {
+                      needDownload = true;
+                      System.out.println("\t\t\tFailed to pull patch from local repo (" + commitID + ")");
+                    }
                 }
               }
               if(needDownload) {
@@ -154,8 +165,8 @@ public class Downloader {
                     e.printStackTrace();
                   }
                 }
+                System.out.println("\t\tDownloaded " + link.getURL());
               }
-              System.out.println("\t\tDownloaded " + link.getURL());
               linkC++;
             } else {
               System.out.println("NOT A PATCH - " + link.getURL());
@@ -165,6 +176,49 @@ public class Downloader {
       }
     }
     System.out.println("Success!");
+  }
+
+  private static boolean isCommitDateValid(String commitID, String patch) {
+        if (FIXED_DATE_STRING == null || FIXED_DATE_STRING.isEmpty()) {
+            System.out.println("Fixed date string is not set in the environment variable.");
+            return false;
+        }
+        if (Common.INCLUSIVE_KERNEL_PATH == null || Common.INCLUSIVE_KERNEL_PATH.isEmpty()) {
+            System.out.println("Kernel directory is not set in the environment variable.");
+            return false;
+        }
+        try {
+            String commitDateStr = getCommitDateFromGit(commitID); // Extract commit date using git log
+            if (commitDateStr == null) {
+                System.out.println("\t\tWARNING: Commit date not found for patch: " + patch);
+                return false;
+            }
+            Date commitDate = GIT_DATE_FORMAT.parse(commitDateStr);
+            Date fixedDate = DATE_FORMAT.parse(FIXED_DATE_STRING);
+            if (commitDate.before(fixedDate)){
+                System.out.println("\t\tCommit date too old: " + commitDate + " for patch: " + patch);
+            } else {
+                System.out.println("\t\tCommit date OK (" + commitDate + ")");
+            }
+
+            return !commitDate.before(fixedDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+  }
+
+  private static String getCommitDateFromGit(String commitID) {
+        try {
+            Process process = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", "git -C " + Common.INCLUSIVE_KERNEL_PATH + " log -1 --format=%ci " + commitID});
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String commitDateStr = reader.readLine();
+            process.waitFor();
+            return commitDateStr;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
   }
 
   private static String getPatchURL(Link link) {
