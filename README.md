@@ -95,9 +95,16 @@ an **alternative** approach to "Importing Linux incremental diffs" but diffs app
 - Pointing `$DOS_PATCHER_INCLUSIVE_KERNEL` to a (CIP) combined kernel repo will generate patches locally when possible
 
 ## Patching
+
+environment vars:
+```
+export DOS_PATCHER_LOOSE_VERSIONS=true  # enable loose patching
+export DOS_PATCHER_LOOSE_VERSIONS_EXTREME=true  # try as hard as possible to find matching patches
+```
+
 - Key: $outputDir is where script will be saved, $repoPath is the kernel to be checked, $repoName is vanity name of kernel
-- To patch a kernel directly: java -jar $DOS_BINARY_PATCHER patch direct $DOS_PATCHES_LINUX_CVES $outputDir/ $repoPath/:repoName...
-- To patch a kernel in an AOSP workspace: java -jar $DOS_BINARY_PATCHER patch workspace $workspace/ $DOS_PATCHES_LINUX_CVES $outputDir/ $repoName...
+- To patch a kernel directly: `java -jar $DOS_BINARY_PATCHER patch direct $DOS_PATCHES_LINUX_CVES $outputDir/ $repoPath/:repoName...`
+- To patch a kernel in an AOSP workspace: `java -jar $DOS_BINARY_PATCHER patch workspace $workspace/ $DOS_PATCHES_LINUX_CVES $outputDir/ $repoName...`
 
 ## Using the Resulting Scripts
 
