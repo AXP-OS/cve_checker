@@ -335,6 +335,7 @@ public class Patcher {
         if(gitMailbox && isGitPatch(patch)) {
           command = command.replaceAll(" apply ", " am ");
         }
+        command = "echo 'processing: " + patch + "'; " + command;
         return command.replaceAll(" -C " + repoPath, "")
             .replaceAll(ensureLeadingSlash(patchesPath.toString()), patchesPathScript);
       } else {
