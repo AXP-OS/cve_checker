@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2017-2024 Divested Computing Group
+Copyright (c) 2025 steadfasterX <steadfasterX #AT# binbash |dot| rocks >
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -277,7 +278,32 @@ public class Patcher {
         script = outputDir + "/" + repoName + ".sh";
       }
       PrintWriter out = new PrintWriter(script, "UTF-8");
+
       out.println("#!/bin/bash");
+      out.println("extract_patch_author() {");
+      out.println("    local author=$(head -n 6 \"$1\" | grep 'From:' | sed 's/From: //')");
+      out.println("    echo \"${author:-$CVE_GIT_AUTHOR}\"");
+      out.println("}");
+      out.println("extract_patch_date() {");
+      out.println("    local date=$(head -n 6 \"$1\" | grep 'Date:' | sed 's/Date: //')");
+      out.println("    echo \"${date:-$(date)}\"");
+      out.println("}");
+      out.println("extract_patch_subject() {");
+      out.println("    local subject=$(head -n 6 \"$1\" | grep 'Subject:' | sed -E 's/Subject: (\\[PATCH\\] )?//')");
+      out.println("    local pname=$(get_patch_name \"$1\")");
+      out.println("    echo -e \"${subject:-$pname}\\n\\napplied by CVE kernel patcher:\\n${DOS_PATCHER_URI_KERNEL}/$pname\"");
+      out.println("}");
+      out.println("get_patch_name() {");
+      out.println("    local patch_path=\"$1\"");
+      out.println("    IFS='/' read -r -a parts <<< \"$patch_path\"");
+      out.println("    local len=${#parts[@]}");
+      out.println("    if (( len >= 3 )); then");
+      out.println("        echo \"${parts[len-3]}/${parts[len-2]}/${parts[len-1]}\"");
+      out.println("    else");
+      out.println("        echo \"$patch_path\"");
+      out.println("    fi");
+      out.println("}");
+
       if (MODE_CURRENT == MODE_WORKSPACE) {
         out.println("if cd \"$DOS_BUILD_BASE\"\"" + repoName.replaceAll("_", "/") + "\"; then");
       }
@@ -285,7 +311,8 @@ public class Patcher {
         out.println(command);
       }
       if (MODE_CURRENT == MODE_WORKSPACE) {
-        out.println("editKernelLocalversion \"-p" + scriptCommands.size() + "\"");
+        out.println("pcnt=$(git log --oneline FETCH_HEAD..|wc -l)");
+        out.println("editKernelLocalversion \"-p${pcnt}\"");
         out.println("else echo \"" + repoName + " is unavailable, not patching.\";");
         out.println("fi;");
         out.println("cd \"$DOS_BUILD_BASE\"");
@@ -335,7 +362,17 @@ public class Patcher {
         if(gitMailbox && isGitPatch(patch)) {
           command = command.replaceAll(" apply ", " am ");
         }
+
+        String patchCmd = "patch -r - --no-backup-if-mismatch --forward --ignore-whitespace --verbose -p1 < ";
+        String patchAuthor = "$(extract_patch_author " + patch + ")";
+        String patchDate = "$(extract_patch_date " + patch + ")";
+        String patchSubject = "$(extract_patch_subject " + patch + ")";
+        String patchName = "$(get_patch_name " + patch + ")";
+
         command = "echo 'processing: " + patch + "'; " + command;
+        String fallBackPatch = "|| (git am --abort 2> /dev/null; " + patchCmd + patch + "&& git add -A && GIT_AUTHOR_DATE=\"" +  patchDate+ "\" git commit --author=\"" + patchAuthor + "\" -m \"" + patchSubject + "\") || exit 44";
+        command += fallBackPatch;
+
         return command.replaceAll(" -C " + repoPath, "")
             .replaceAll(ensureLeadingSlash(patchesPath.toString()), patchesPathScript);
       } else {
