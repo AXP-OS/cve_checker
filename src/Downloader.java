@@ -140,12 +140,16 @@ public class Downloader {
                   System.exit(1);
                 }
                 if (isCommitDateValid(commitID, patch)) {
+                  try {
                     if (Common.runCommand("git -C " + Common.INCLUSIVE_KERNEL_PATH + " format-patch -1 " + commitID + " --no-signature --keep-subject --output " + patchOutput.replaceAll(".base64", "")) == 0) {
                       System.out.println("\t\t\tPulled patch directly from local repo (" + commitID + ")");
                     } else {
                       needDownload = true;
                       System.out.println("\t\t\tFailed to pull patch from local repo (" + commitID + ")");
                     }
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
                 }
               }
               if(needDownload) {

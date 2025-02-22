@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2022-2024 Divested Computing Group
+Copyright (c) 2025 steadfasterX <steadfasterX #AT# binbash |dot| rocks >
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -16,8 +17,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import java.io.File;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 
 public class Common {
     public static final String URL_LINUX_MAINLINE =
@@ -40,17 +48,53 @@ public class Common {
         }
     }
 
-    public static int runCommand(String command) {
-        try {
-            Process process = Runtime.getRuntime().exec(command);
-            while (process.isAlive()) {
-                // Do nothing
-            }
-            return process.exitValue();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return -1;
+    public static int runCommand(String command) throws Exception {
+	int attempts = 0;
+	int maxAttempts = 3;
+	int timeout = 6;
+	int extendedTimeout = 10;
+
+	while (attempts < maxAttempts) {
+	  Process process = Runtime.getRuntime().exec(command);
+	  ExecutorService executor = Executors.newSingleThreadExecutor();
+	  Future<?> future = executor.submit(() -> {
+	    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		 BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+	      String line;
+	      while ((line = reader.readLine()) != null) {
+		System.out.println(line);
+	      }
+	      // Uncomment the following lines if you want to read error stream as well
+	      // while ((line = errorReader.readLine()) != null) {
+	      //   System.err.println(line);
+	      // }
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	    }
+	  });
+
+	  try {
+	    if (!process.waitFor(timeout, TimeUnit.SECONDS)) {
+	      process.destroy();
+	      throw new TimeoutException("Command timed out");
+	    }
+	    future.get();  // Ensure output is fully processed
+	    return process.exitValue();  // Command executed successfully
+	  } catch (TimeoutException e) {
+	    attempts++;
+	    timeout = extendedTimeout;  // Increase the timeout duration for the next attempt
+	    if (attempts >= maxAttempts) {
+	      process.destroy();
+	      throw e;  // Rethrow the exception if max attempts are reached
+	    }
+	  } finally {
+	    executor.shutdown();
+	    if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+	      executor.shutdownNow();
+	    }
+	  }
+	}
+	return -1;  // This line should never be reached
     }
 
     public static Version getKernelVersion(File kernelMakefile) {
