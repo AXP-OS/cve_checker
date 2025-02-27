@@ -44,7 +44,7 @@ jobs:
             && sudo apt update \
             && sudo apt install gh -y
         # login to Github:
-        gh auth login || gh auth status
+        gh auth login || (gh auth status 2>&1 | grep 'Logged in')
 
     - name: "Create/Sync repos with configured mirror"
       # https://github.com/k8scat/action-mirror-git
