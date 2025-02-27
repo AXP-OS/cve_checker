@@ -75,7 +75,7 @@ jobs:
         echo "repo: >${{ github.event.repository.name }}<"
         DEFBR=$(git branch --show-current)
         echo "current on: >$DEFBR<"
-        gh repo edit ${{ vars.SCND_MIRROR_ORG_DOMAIN }}/${{ github.event.repository.name }} --default-branch $DEFBR
+        gh repo edit ${{ vars.SCND_MIRROR_ORG_NAME }}/${{ github.event.repository.name }} --default-branch $DEFBR
         if [ "$?" == "0" ]; then
           echo "default branch set to: $DEFBR"
         else
