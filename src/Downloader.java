@@ -48,7 +48,7 @@ public class Downloader {
       System.out.println("Parsing...");
       File cveManifestReal = manifest;
       Scanner cve = new Scanner(cveManifestReal);
-      output = cveManifestReal.getParent() + "/";
+      output = (cveManifestReal.getParent() != null ? cveManifestReal.getParent() : ".") + "/";
       System.out.println(output);
       String name = "";
       boolean depends = false;
