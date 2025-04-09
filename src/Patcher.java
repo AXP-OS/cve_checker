@@ -356,7 +356,7 @@ public class Patcher {
           } else {
             System.out.println("\t\t\tPatched failed to apply after being checked! "
                 + logPretty(command, repoPath, patchesPath));
-            System.exit(1);
+            return null;
           }
         }
         if(gitMailbox && isGitPatch(patch)) {
