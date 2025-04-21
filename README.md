@@ -24,7 +24,24 @@ A prebuilt release can be downloaded [here](https://codeberg.org/AXP-OS/cve_chec
 - Production examples: [20.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-20.0/CVE_Patchers), [19.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-19.1/CVE_Patchers), [18.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-18.1/CVE_Patchers), [17.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-17.1/CVE_Patchers), [16.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-16.0/CVE_Patchers), [15.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-15.1/CVE_Patchers), [14.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-14.1/CVE_Patchers)
 
 ## Patch Database
-- On [Codeberg](https://codeberg.org/AXP-OS/kernel_patches)
+
+- [AXP.OS Gitea](https://code.binbash.rocks/AXP.OS/kernel_patches) _(login required, main repo)_
+- [Codeberg](https://codeberg.org/AXP-OS/kernel_patches) _(no login required, mirror of the AXP.OS Gitea repo)_
+
+### Process
+
+The above patch database will be adjusted automatically by [Ansible](https://github.com/sfX-android/automation_scripts/blob/ansible/plays/kernel_patcher.yml) and is scheduled to run every week on:
+- Tuesday
+- Thursday
+
+### Branches & Tags
+
+Since April the state of the kernel_patches database will be tagged as:
+- _TAG:_ `<YYYY-MM-DD>` _(date of commit/push)_
+- _TAG:_ `<YYYY-MM>-AOS` _(used for [AXP.OS](https://axpos.org) stable releases)_
+- _BRANCH:_ `main` _(always the latest automatically added patches)_
+
+The main reason for tagging the database is to have an identical set of patches when building over a longer time period and/or to get better insights in differences between these tag dates.
 
 ## License
 - AGPL-3.0-or-later
@@ -48,7 +65,6 @@ CVEs are sourced from the sources listed at the top of [Kernel_CVE_Patch_List.tx
 1. Not everything can be automated! Most of all the check&test of a patch set cannot be automated and so require manual interaction always.
 1. Not all steps are automated. A full list of sources which are to be checked is here [Kernel_CVE_Patch_List.header](https://codeberg.org/AXP-OS/kernel_patches/src/branch/main/Kernel_CVE_Patch_List.header)
 1. You have to ensure to test the results properly before applying them for production use
-1. The whole process is currently (2025-02) a WIP, so expect issues
 
 A real-world example using Ansible can be found here [role](https://github.com/sfX-android/automation_scripts/tree/ansible/roles/kernel_patcher), [play](https://github.com/sfX-android/automation_scripts/blob/ansible/plays/kernel_patcher.yml) while this can be adapted to any CI/CD process.
 
