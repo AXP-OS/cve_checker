@@ -58,7 +58,6 @@ public class Main {
     System.out.println("Copyright 2017-2024 Divested Computing Group");
     System.out.println("Copyright 2025 steadfasterX <steadfasterX #AT# binbash |dot| rocks>");
     System.out.println("License: GPLv3");
-    System.out.printf("Version: %s%n", System.getProperty("APP_VERSION", "unknown"));
     System.out.println("");
   }
 
