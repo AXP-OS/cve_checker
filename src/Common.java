@@ -50,9 +50,9 @@ public class Common {
 
     public static int runCommand(String command) throws Exception {
 	int attempts = 0;
-	int maxAttempts = 3;
-	int timeout = 10;
-	int extendedTimeout = 60;
+	int maxAttempts = 2;
+	int timeout = 6;
+	int extendedTimeout = 10;
 
 	while (attempts < maxAttempts) {
 	  Process process = Runtime.getRuntime().exec(command);
