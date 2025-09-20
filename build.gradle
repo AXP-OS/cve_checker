@@ -46,6 +46,6 @@ def getVersionGit() {
 }
 version = '0.9.5' + getVersionGit()
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-DAPP_VERSION=${project.version}"
+application {
+    applicationDefaultJvmArgs = ["-DAPP_VERSION=${project.version}"]
 }
