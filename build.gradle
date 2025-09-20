@@ -45,7 +45,3 @@ def getVersionGit() {
     return versionGit
 }
 version = '0.9.5' + getVersionGit()
-
-application {
-    applicationDefaultJvmArgs = ["-DAPP_VERSION=${project.version}"]
-}
