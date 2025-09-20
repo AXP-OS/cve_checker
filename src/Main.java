@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2017-2020 Divested Computing Group
+Copyright (c) 2017-2024 Divested Computing Group
+Copyright (c) 2025 steadfasterX <steadfasterX #AT# binbash |dot| rocks>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -53,9 +54,11 @@ public class Main {
   }
 
   private static void printHeader() {
-    System.out.println("DivestOS Patch Downloader/Checker");
-    System.out.println("Copyright 2017-2020 Divested Computing Group");
+    System.out.println("CVE Patch Downloader/Checker");
+    System.out.println("Copyright 2017-2024 Divested Computing Group");
+    System.out.println("Copyright 2025 steadfasterX <steadfasterX #AT# binbash |dot| rocks>");
     System.out.println("License: GPLv3");
+    System.out.printf("Version: %s%n", System.getProperty("APP_VERSION", "unknown"));
     System.out.println("");
   }
 
